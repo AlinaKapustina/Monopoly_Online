@@ -28,7 +28,7 @@ import rx.Subscriber;
 public class Client {
 
     private static final int PORT = 20202;
-    private static final String ADDRESS = "192.168.1.39";
+    private static final String ADDRESS = "192.168.0.70";
     private static final String CHARSET = "UTF-8";
     private static final int TIMEOUT = 1;
     private static final int BUFFER_SIZE = 1024;

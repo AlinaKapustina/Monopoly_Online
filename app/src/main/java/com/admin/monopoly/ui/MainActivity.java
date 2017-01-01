@@ -28,9 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int OFF = 0;
     private static final int ADD = 1;
     private static final int DELETE = 2;
-    private int position = 0;
-    private int playerNumber = 0;
-    private String login = "admin1";
+    private String login = "admin";
     private Game game;
 
     private int modeOperationWithHouse = OFF;
@@ -58,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (modeOperationWithHouse == ADD) {
-                        if (login == game.getCells().get(cellNumber).getName() && game.getCells().get(cellNumber).getHouse() < 4) {
+                        System.out.println(game.getCells().get(cellNumber).getName());
+                        if (login.equals(game.getCells().get(cellNumber).getName()) && game.getCells().get(cellNumber).getHouse() < 4) {
                             game.getCells().get(cellNumber).setHouse(game.getCells().get(cellNumber).getHouse() + 1);
                             TextView textView = (TextView) findViewById(getResources().getIdentifier("cell" + cellNumber, "id", getPackageName()));
                             textView.setText(textView.getText() + "▲");
@@ -68,10 +67,10 @@ public class MainActivity extends AppCompatActivity {
                                     .subscribe(Client.getEmptySubscriber());
                         }
                     } else if (modeOperationWithHouse == DELETE) {
-                        if (login == game.getCells().get(cellNumber).getName() && game.getCells().get(cellNumber).getHouse() > 0) {
+                        if (login.equals(game.getCells().get(cellNumber).getName()) && game.getCells().get(cellNumber).getHouse() > 0) {
                             game.getCells().get(cellNumber).setHouse(game.getCells().get(cellNumber).getHouse() - 1);
                             TextView textView = (TextView) findViewById(getResources().getIdentifier("cell" + cellNumber, "id", getPackageName()));
-                            textView.setText(textView.getText().toString().substring(0, textView.getText().length() - 2));
+                            textView.setText(textView.getText().toString().substring(0, textView.getText().length() - 1));
                             Observable.create(Client.transferDeleteHouseToServer(login, cellNumber))
                                     .subscribeOn(Schedulers.newThread())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -92,12 +91,14 @@ public class MainActivity extends AppCompatActivity {
         Random random = new Random();
         int number = random.nextInt(6) + 1;
         diceButton.setText(String.valueOf(number));
+        int position = game.getPlayer().get(game.search(login)).getPos();
         TextView textView = (TextView) findViewById(getResources().getIdentifier("cell" + position, "id", getPackageName()));
-        String icon = PLAYER_ICONS[playerNumber];
+        String icon = PLAYER_ICONS[game.search(login)];
         StringBuffer stringBuffer = new StringBuffer(textView.getText().toString());
         stringBuffer.deleteCharAt(stringBuffer.indexOf(icon));
         textView.setText(stringBuffer);
         position = (position + number) % 28;
+        game.getPlayer().get(game.search(login)).setPos(position);
         textView = (TextView) findViewById(getResources().getIdentifier("cell" + position, "id", getPackageName()));
         textView.setText(textView.getText() + icon);
         diceButton.setEnabled(false);
@@ -117,17 +118,19 @@ public class MainActivity extends AppCompatActivity {
         } else {
             modeOperationWithHouse = ADD;
             addHouseButton.setText(R.string.on);
+            deleteHouseButton.setText(R.string.delete_house);
         }
     }
 
-    @OnClick(R.id.add_house)
+    @OnClick(R.id.delete_house)
     void onClickDeleteHouse(View view) {
         if (modeOperationWithHouse == DELETE) {
             modeOperationWithHouse = OFF;
-            addHouseButton.setText(R.string.delete_house);
+            deleteHouseButton.setText(R.string.delete_house);
         } else {
             modeOperationWithHouse = DELETE;
-            addHouseButton.setText(R.string.on);
+            deleteHouseButton.setText(R.string.on);
+            addHouseButton.setText(R.string.add_house);
         }
     }
 
@@ -144,13 +147,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    void step(Game game) {
+    public void step(Game game) {
         this.game = game;
         updateView();
     }
 
     private void updateView() {
-        playerNumber = game.search(login);
+        int playerNumber = game.search(login);
         int size = game.getPlayer().size();
         LinearLayout linearLayout;
         for (int i = size + 1; i <= 4; i++) {
@@ -197,6 +200,10 @@ public class MainActivity extends AppCompatActivity {
             diceButton.setText(R.string.dice);
             addHouseButton.setEnabled(true);
             deleteHouseButton.setEnabled(true);
+        }else{
+            diceButton.setEnabled(false);
+            addHouseButton.setEnabled(false);
+            deleteHouseButton.setEnabled(false);
         }
     }
 }
