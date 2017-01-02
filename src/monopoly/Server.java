@@ -307,7 +307,7 @@ public class Server {
                     player.setSum(player.getSum() - cost);
                     player2.setSum(player2.getSum() + cost);
                     b = false;
-                  //  game.getPlayer().remove(player);
+                    //  game.getPlayer().remove(player);
                 }
             } else if (number % 7 == 0) {
                 int house = cell.getHouse();
@@ -343,7 +343,9 @@ public class Server {
             String login = jsonObject.get("Login").getAsString();
             int number = jsonObject.get("Cell").getAsInt();
             Game game = gamer.get(login);
+            Player player = game.getPlayer().get(game.search(login));
             Cell cell = game.getCells().get(number);
+            player.setSum(player.getSum() - (int) (cell.getArenda() * 0.5));
             cell.setHouse(cell.getHouse() + 1);
             JsonObject answerJson = new JsonObject();
             answerJson.addProperty("Type", TYPE_GAME);
@@ -362,8 +364,10 @@ public class Server {
             String login = jsonObject.get("Login").getAsString();
             int number = jsonObject.get("Cell").getAsInt();
             Game game = gamer.get(login);
+            Player player = game.getPlayer().get(game.search(login));
             Cell cell = game.getCells().get(number);
             cell.setHouse(cell.getHouse() - 1);
+            player.setSum(player.getSum() + (int) (cell.getArenda() * 0.5));
             JsonObject answerJson = new JsonObject();
             answerJson.addProperty("Type", TYPE_GAME);
             answerJson.addProperty("Status", b);
