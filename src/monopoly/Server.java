@@ -2,8 +2,6 @@ package monopoly;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -41,6 +39,9 @@ public class Server {
     HashMap<String, Game> gamer = new HashMap<>();
 
     Server() throws ClassNotFoundException, MessagingException {
+        
+       //создана комната на двух игроков. Так как пока нет регистрации и создания лобби. 
+       //удалить эти строки, как появится создания лобби и регистрация игроков.
         room_two.add("admin");
         room_two.add("admin1");
         Game game = new Game(room_two, START_SUM);
@@ -52,29 +53,21 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(20202)) {
             while (true) {
                 try (Socket socket = serverSocket.accept(); InputStream inputStream = socket.getInputStream(); OutputStream outputStream = socket.getOutputStream()) {
-                    JsonObject resultJson = new JsonObject();
-                    resultJson.addProperty("Type", 5);
-                    resultJson.addProperty("Login", "admin");
-                    resultJson.addProperty("Password", "1234");
-                    resultJson.addProperty("E-mail", "alinakapystina@gmail.com");
-                    resultJson.addProperty("Number", 2);
-                    resultJson.addProperty("Cell", 5);
+                   
 
                     System.out.println("Server start");
                     byte[] buffer = new byte[1000];
 
                     int size = inputStream.read(buffer);
                     String input = new String(buffer, 0, size);
-                    System.out.println(input);
-                    System.out.println(input.length());
-                    String s = resultJson.toString();
+                   
                     JsonObject jsonObject = new JsonParser().parse(input).getAsJsonObject();
                     int type = jsonObject.get("Type").getAsInt();
-//                try {
-//                    dataBase = new DataBase("MONOPOLY", "123456", "USERS", "localhost");
-//                } catch (SQLException ex) {
-//
-//                }
+                    try {
+                        dataBase = new DataBase("MONOPOLY", "123456", "USERS", "localhost");
+                    } catch (SQLException ex) {
+
+                    }
                     String answer = null;
                     switch (type) {
                         case TYPE_NEW:
@@ -280,7 +273,6 @@ public class Server {
             String g = builder.toJson(game);
             answerJson.addProperty("Game", g);
             s = answerJson.toString();
-            //System.out.println(s);
         } catch (JsonIOException ex) {
             ex.printStackTrace();
         }
@@ -307,7 +299,7 @@ public class Server {
                     player.setSum(player.getSum() - cost);
                     player2.setSum(player2.getSum() + cost);
                     b = false;
-                    //  game.getPlayer().remove(player);
+                    player.setIsLife(false);
                 }
             } else if (number % 7 == 0) {
                 int house = cell.getHouse();
@@ -324,8 +316,14 @@ public class Server {
                     cell.setName(login);
                 }
             }
-            game.setOnStep(game.getPlayer().get((game.search(login) + 1) % game.getPlayer().size()).getName());
-            game.getPlayer().get(game.search(login)).setPos(number);
+            for (int i = 1; i < game.getPlayer().size(); i++) {
+                Player player = game.getPlayer().get((game.search(login) + i) % game.getPlayer().size());
+                if (player.isIsLife()) {
+                    game.setOnStep(game.getPlayer().get((game.search(login) + i) % game.getPlayer().size()).getName());
+                    game.getPlayer().get(game.search(login)).setPos(number);
+                    break;
+                }
+            }
             JsonObject answerJson = new JsonObject();
             answerJson.addProperty("Type", TYPE_GAME);
             answerJson.addProperty("Status", b);

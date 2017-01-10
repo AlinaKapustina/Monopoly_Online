@@ -16,7 +16,6 @@ public class DataBase {
     ResultSet executeQuery;
     String tablespace;
     static final String TABLE_USERS = "USERS";
-    static final String TABLE_FRIENDS = "FRIENDS";
 
     public DataBase(String name, String pass, String tab, String localhost) throws ClassNotFoundException, SQLException {
         Class.forName("oracle.jdbc.OracleDriver");

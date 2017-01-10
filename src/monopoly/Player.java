@@ -6,6 +6,23 @@ public class Player {
     private String login;
     private int sum;
     private int pos;
+    private boolean isLife = true;
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public boolean isIsLife() {
+        return isLife;
+    }
+
+    public void setIsLife(boolean isLife) {
+        this.isLife = isLife;
+    }
 
     public Player(String login, int sum) {
         this.login = login;
