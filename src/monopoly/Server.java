@@ -27,6 +27,8 @@ public class Server {
     static final int TYPE_GAME = 6;
     static final int TYPE_ADD_HOUSE = 7;
     static final int TYPE_DELETE_HOUSE = 8;
+    static final int TYPE_TRADE = 9;
+    static final int TYPE_ANSWER_TRADE = 10;
 
     static final int START_SUM = 2000;
 
@@ -39,28 +41,26 @@ public class Server {
     HashMap<String, Game> gamer = new HashMap<>();
 
     Server() throws ClassNotFoundException, MessagingException {
-        
-       //создана комната на двух игроков. Так как пока нет регистрации и создания лобби. 
-       //удалить эти строки, как появится создания лобби и регистрация игроков.
-        room_two.add("admin");
-        room_two.add("admin1");
-        Game game = new Game(room_two, START_SUM);
-        game.getPlayer().get(0).setPos(0);
-        game.getPlayer().get(1).setPos(0);
-        gamer.put("admin", game);
-        gamer.put("admin1", game);
 
+        //создана комната на двух игроков. Так как пока нет регистрации и создания лобби. 
+        //удалить эти строки, как появится создания лобби и регистрация игроков.
+//        room_two.add("admin");
+//        room_two.add("admin1");
+//        Game game = new Game(room_two, START_SUM);
+//        game.getPlayer().get(0).setPos(0);
+//        game.getPlayer().get(1).setPos(0);
+//        gamer.put("admin", game);
+//        gamer.put("admin1", game);
         try (ServerSocket serverSocket = new ServerSocket(20202)) {
             while (true) {
                 try (Socket socket = serverSocket.accept(); InputStream inputStream = socket.getInputStream(); OutputStream outputStream = socket.getOutputStream()) {
-                   
 
                     System.out.println("Server start");
                     byte[] buffer = new byte[1000];
 
                     int size = inputStream.read(buffer);
                     String input = new String(buffer, 0, size);
-                   
+                    System.out.println(input);
                     JsonObject jsonObject = new JsonParser().parse(input).getAsJsonObject();
                     int type = jsonObject.get("Type").getAsInt();
                     try {
@@ -97,6 +97,12 @@ public class Server {
                             break;
                         case TYPE_DELETE_HOUSE:
                             answer = deleteHouse(jsonObject);
+                            break;
+                        case TYPE_TRADE:
+                            answer = addTrade(jsonObject);
+                            break;
+                        case TYPE_ANSWER_TRADE:
+                            answer = deleteTrade(jsonObject);
                             break;
                         default:
                             break;
@@ -348,7 +354,7 @@ public class Server {
                 cell.setHouse(cell.getHouse() + 1);
             }
             JsonObject answerJson = new JsonObject();
-            answerJson.addProperty("Type", TYPE_GAME);
+            answerJson.addProperty("Type", TYPE_ADD_HOUSE);
             answerJson.addProperty("Status", b);
             s = answerJson.toString();
         } catch (JsonIOException e) {
@@ -369,7 +375,56 @@ public class Server {
             cell.setHouse(cell.getHouse() - 1);
             player.setSum(player.getSum() + (int) (cell.getArenda() * 0.5));
             JsonObject answerJson = new JsonObject();
-            answerJson.addProperty("Type", TYPE_GAME);
+            answerJson.addProperty("Type", TYPE_DELETE_HOUSE);
+            answerJson.addProperty("Status", b);
+            s = answerJson.toString();
+        } catch (JsonIOException e) {
+
+        }
+        return s;
+    }
+
+    final String addTrade(JsonObject jsonObject) {
+        boolean b = true;
+        String s = null;
+        try {
+            String login = jsonObject.get("Login").getAsString();
+            int number = jsonObject.get("Cell").getAsInt();
+            int cost = jsonObject.get("Cost").getAsInt();
+            Game game = gamer.get(login);
+            Player player = game.getPlayer().get(game.search(login));
+            Cell cell = game.getCells().get(number);
+            String salesman = cell.getName();
+            game.setTrade(new Trade(salesman, login, number, cost));
+            JsonObject answerJson = new JsonObject();
+            answerJson.addProperty("Type", TYPE_TRADE);
+            answerJson.addProperty("Status", b);
+            s = answerJson.toString();
+        } catch (JsonIOException e) {
+
+        }
+        return s;
+    }
+
+    final String deleteTrade(JsonObject jsonObject) {
+        boolean b = true;
+        String s = null;
+        try {
+            String login = jsonObject.get("Login").getAsString();
+            int number = jsonObject.get("Answer").getAsInt();
+            Game game = gamer.get(login);
+            Player player = game.getPlayer().get(game.search(login));
+            Cell cell = game.getCells().get(number);
+            String salesman = cell.getName();
+            if (number == 1) {
+                cell.setName(login);
+                player.setSum(player.getSum() - game.getTrade().price);
+                game.setTrade(null);
+            } else {
+                game.setTrade(null);
+            }
+            JsonObject answerJson = new JsonObject();
+            answerJson.addProperty("Type", TYPE_TRADE);
             answerJson.addProperty("Status", b);
             s = answerJson.toString();
         } catch (JsonIOException e) {

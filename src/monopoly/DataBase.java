@@ -33,15 +33,15 @@ public class DataBase {
     
     
    public String getPassword(String login) throws SQLException{
-       
-       ResultSet pass = connection.createStatement().executeQuery("SELECT PASSWORD FROM \"" + TABLE_USERS + "\"WHERE LOGIN = \'" +login+ "\'");
+         System.out.println("SELECT PASSWORD FROM \"" + TABLE_USERS + "\" WHERE LOGIN_USER = \'" +login+ "\'");
+       ResultSet pass = connection.createStatement().executeQuery("SELECT PASSWORD FROM \"" + TABLE_USERS + "\" WHERE LOGIN_USER = \'" +login+ "\'");
        pass.next();
        String s = pass.getString(1);
        return s;
    }
    public String getEmail(String login) throws SQLException{
        
-       ResultSet email = connection.createStatement().executeQuery("SELECT EMAIL FROM \"" + TABLE_USERS + "\"WHERE LOGIN = \'" +login+ "\'");
+       ResultSet email = connection.createStatement().executeQuery("SELECT EMAIL FROM \"" + TABLE_USERS + "\"WHERE LOGIN_USER = \'" +login+ "\'");
        email.next();
        String s = email.getString(1);
        return s;

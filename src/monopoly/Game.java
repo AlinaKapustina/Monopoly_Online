@@ -11,6 +11,15 @@ public class Game {
     private List<Player> player = new ArrayList<>();
     private List<Cell> cells = new ArrayList<>();
     private String onStep;
+    private Trade trade = null;
+
+    public Trade getTrade() {
+        return trade;
+    }
+
+    public void setTrade(Trade trade) {
+        this.trade = trade;
+    }
 
     Game(List<String> logins, int sum) {
         for (int i = 0; i < logins.size(); i++) {
