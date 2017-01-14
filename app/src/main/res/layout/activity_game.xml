@@ -373,6 +373,15 @@
                 android:textSize="@dimen/text_size" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/deal"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_column="5"
+            android:enabled="false"
+            android:text="@string/deal"
+            android:textSize="@dimen/text_size" />
+
         <LinearLayout
             android:id="@+id/cell_layout23"
             android:layout_column="7"
@@ -536,7 +545,6 @@
                 android:textColor="@color/black"
                 android:textSize="@dimen/text_size" />
         </LinearLayout>
-
 
         <LinearLayout
             android:id="@+id/player3"

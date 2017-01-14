@@ -163,7 +163,6 @@ public class Client {
                             jsonObj.put("Type", Constant.TYPE_ADD_HOUSE);
                             jsonObj.put("Login", login);
                             jsonObj.put("Cell", cellNumber);
-                            System.out.println(jsonObj.toString());
                             out.write(jsonObj.toString().getBytes(CHARSET));
                             subscriber.onCompleted();
                         }
@@ -192,7 +191,63 @@ public class Client {
                             jsonObj.put("Type", Constant.TYPE_DELETE_HOUSE);
                             jsonObj.put("Login", login);
                             jsonObj.put("Cell", cellNumber);
-                            System.out.println(jsonObj.toString());
+                            out.write(jsonObj.toString().getBytes(CHARSET));
+                            subscriber.onCompleted();
+                        }
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                semaphore.release();
+            }
+        };
+    }
+
+    public static Observable.OnSubscribe<Boolean> transferDealToServer(final String login, final int cellNumber,final int cost) {
+        return new Observable.OnSubscribe<Boolean>() {
+
+            @TargetApi(Build.VERSION_CODES.KITKAT)
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                try {
+                    semaphore.acquire();
+                    try (Socket socket = new Socket(ADDRESS, PORT)) {
+                        try (OutputStream out = socket.getOutputStream()) {
+                            JSONObject jsonObj = new JSONObject();
+                            jsonObj.put("Type", Constant.TYPE_TRADE);
+                            jsonObj.put("Login", login);
+                            jsonObj.put("Cell", cellNumber);
+                            jsonObj.put("Cost", cost);
+                            out.write(jsonObj.toString().getBytes(CHARSET));
+                            subscriber.onCompleted();
+                        }
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                semaphore.release();
+            }
+        };
+    }
+
+    public static Observable.OnSubscribe<Boolean> transferAnswerDealToServer(final String login, final boolean answer) {
+        return new Observable.OnSubscribe<Boolean>() {
+
+            @TargetApi(Build.VERSION_CODES.KITKAT)
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                try {
+                    semaphore.acquire();
+                    try (Socket socket = new Socket(ADDRESS, PORT)) {
+                        try (OutputStream out = socket.getOutputStream()) {
+                            JSONObject jsonObj = new JSONObject();
+                            jsonObj.put("Type", Constant.TYPE_ANSWER_TRADE);
+                            jsonObj.put("Login", login);
+                            jsonObj.put("Answer", answer);
                             out.write(jsonObj.toString().getBytes(CHARSET));
                             subscriber.onCompleted();
                         }

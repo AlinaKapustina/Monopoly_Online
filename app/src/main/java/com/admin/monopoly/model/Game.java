@@ -11,6 +11,15 @@ public class Game {
     private List<Player> player = new ArrayList<>();
     private List<Cell> cells = new ArrayList<>();
     private String onStep;
+    private Trade trade = null;
+
+    public Trade getTrade() {
+        return trade;
+    }
+
+    public void setTrade(Trade trade) {
+        this.trade = trade;
+    }
 
     Game(List<String> logins, int sum) {
         for (int i = 0; i < logins.size(); i++) {
@@ -23,17 +32,15 @@ public class Game {
     final void addCell() {
         try {
             Scanner reader = new Scanner(new File("./data.txt"));
-            for (int k = 0; k < 4; k++) {
-                cells.add(new Cell(reader.nextInt(), null));
-                for (int j = 0; j < 6; j++) {
-                    int arenda = reader.nextInt();
-                    int[] cost = new int[6];
-                    for (int i = 0; i < 6; i++) {
-                        cost[i] = reader.nextInt();
-                    }
-                    cells.add(new Cell(arenda, cost));
+            for (int k = 0; k < 28; k++) {
+                int arenda = reader.nextInt();
+                int[] cost = new int[5];
+                for (int i = 0; i < 5; i++) {
+                    cost[i] = reader.nextInt();
                 }
+                cells.add(new Cell(arenda, cost));
             }
+
         } catch (FileNotFoundException ex) {
 
         }
@@ -59,16 +66,15 @@ public class Game {
     public void setOnStep(String onStep) {
         this.onStep = onStep;
     }
-    
-    public int search(String login){
-        for (int i = 0; i <player.size(); i++) {
-            if (player.get(i).getName().equals(login)){
+
+    public int search(String login) {
+        for (int i = 0; i < player.size(); i++) {
+            if (player.get(i).getName().equals(login)) {
                 return i;
             }
         }
-        return  -1;
+        return -1;
     }
-    
-    
 
+    
 }

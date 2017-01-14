@@ -7,7 +7,7 @@ public class Cell {
     private int arenda;
     private int[] cost;
 
-    Cell(int arenda, int[] cost) {
+    public Cell(int arenda, int[] cost) {
         this.arenda = arenda;
         this.cost = cost;
     }

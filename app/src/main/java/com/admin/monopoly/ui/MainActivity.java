@@ -1,15 +1,20 @@
 package com.admin.monopoly.ui;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.admin.monopoly.BusProvider;
 import com.admin.monopoly.R;
 import com.admin.monopoly.model.Game;
+import com.admin.monopoly.model.Trade;
 import com.admin.monopoly.net.Client;
 import com.squareup.otto.Subscribe;
 
@@ -28,11 +33,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int OFF = 0;
     private static final int ADD = 1;
     private static final int DELETE = 2;
+    private static final int DEAL = 3;
     private String login = "admin";
     private Game game;
+    private int modeOperation = OFF;
 
-    private int modeOperationWithHouse = OFF;
-
+    @Bind(R.id.deal)
+    Button dealButton;
     @Bind(R.id.dice)
     Button diceButton;
     @Bind(R.id.add_house)
@@ -55,8 +62,7 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (modeOperationWithHouse == ADD) {
-                        System.out.println(game.getCells().get(cellNumber).getName());
+                    if (modeOperation == ADD) {
                         if (login.equals(game.getCells().get(cellNumber).getName()) && game.getCells().get(cellNumber).getHouse() < 4) {
                             game.getCells().get(cellNumber).setHouse(game.getCells().get(cellNumber).getHouse() + 1);
                             TextView textView = (TextView) findViewById(getResources().getIdentifier("cell" + cellNumber, "id", getPackageName()));
@@ -66,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(Client.getEmptySubscriber());
                         }
-                    } else if (modeOperationWithHouse == DELETE) {
+                    } else if (modeOperation == DELETE) {
                         if (login.equals(game.getCells().get(cellNumber).getName()) && game.getCells().get(cellNumber).getHouse() > 0) {
                             game.getCells().get(cellNumber).setHouse(game.getCells().get(cellNumber).getHouse() - 1);
                             TextView textView = (TextView) findViewById(getResources().getIdentifier("cell" + cellNumber, "id", getPackageName()));
@@ -76,6 +82,53 @@ public class MainActivity extends AppCompatActivity {
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(Client.getEmptySubscriber());
                         }
+                    } else if (modeOperation == DEAL) {
+                        String cellOwner = game.getCells().get(cellNumber).getName();
+                        if (!cellOwner.isEmpty() && !login.equals(cellOwner)) {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                            alert.setTitle("Cost");
+                            TextView textView = (TextView) findViewById(getResources().getIdentifier("cell_country" + cellNumber, "id", getPackageName()));
+                            alert.setMessage(textView.getText());
+                            final EditText input = new EditText(MainActivity.this);
+                            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            alert.setView(input);
+                            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    int value = Integer.parseInt(input.getText().toString());
+                                    if (value > 0) {
+                                        dealButton.setEnabled(false);
+                                        diceButton.setEnabled(false);
+                                        addHouseButton.setEnabled(false);
+                                        deleteHouseButton.setEnabled(false);
+                                        Observable.create(Client.transferDealToServer(login, cellNumber, value))
+                                                .subscribeOn(Schedulers.newThread())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(Client.getEmptySubscriber());
+                                    }else{
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                        builder.setTitle("Error")
+                                                .setMessage("Negative cost")
+                                                .setCancelable(false)
+                                                .setNegativeButton("ОК",
+                                                        new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int id) {
+                                                                //dialog.cancel();
+                                                            }
+                                                        });
+                                        AlertDialog alert = builder.create();
+                                        alert.show();
+                                    }
+                                }
+                            });
+
+                            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+
+                            AlertDialog dialog = alert.create();
+                            dialog.show();
+                        }
                     }
                 }
             });
@@ -84,6 +137,19 @@ public class MainActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(Client.getSubscriber());
+    }
+
+    @OnClick(R.id.deal)
+    void onClickDeal(View view) {
+        if (modeOperation == DEAL) {
+            modeOperation = OFF;
+            dealButton.setText(R.string.deal);
+        } else {
+            modeOperation = DEAL;
+            dealButton.setText(R.string.on);
+            addHouseButton.setText(R.string.add_house);
+            deleteHouseButton.setText(R.string.delete_house);
+        }
     }
 
     @OnClick(R.id.dice)
@@ -112,24 +178,26 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.add_house)
     void onClickAddHouse(View view) {
-        if (modeOperationWithHouse == ADD) {
-            modeOperationWithHouse = OFF;
+        if (modeOperation == ADD) {
+            modeOperation = OFF;
             addHouseButton.setText(R.string.add_house);
         } else {
-            modeOperationWithHouse = ADD;
+            modeOperation = ADD;
             addHouseButton.setText(R.string.on);
+            dealButton.setText(R.string.deal);
             deleteHouseButton.setText(R.string.delete_house);
         }
     }
 
     @OnClick(R.id.delete_house)
     void onClickDeleteHouse(View view) {
-        if (modeOperationWithHouse == DELETE) {
-            modeOperationWithHouse = OFF;
+        if (modeOperation == DELETE) {
+            modeOperation = OFF;
             deleteHouseButton.setText(R.string.delete_house);
         } else {
-            modeOperationWithHouse = DELETE;
+            modeOperation = DELETE;
             deleteHouseButton.setText(R.string.on);
+            dealButton.setText(R.string.deal);
             addHouseButton.setText(R.string.add_house);
         }
     }
@@ -162,6 +230,10 @@ public class MainActivity extends AppCompatActivity {
         }
         TextView textView;
         for (int i = 1; i <= size; i++) {
+            if(!game.getPlayer().get(i-1).isIsLife()){
+                linearLayout = (LinearLayout) findViewById(getResources().getIdentifier("player" + i, "id", getPackageName()));
+                linearLayout.setBackgroundResource(R.drawable.negative_player_background);
+            }
             textView = (TextView) findViewById(getResources().getIdentifier("player" + i + "_login", "id", getPackageName()));
             textView.setText(game.getPlayer().get(i - 1).getName() + " " + PLAYER_ICONS[i - 1]);
             textView = (TextView) findViewById(getResources().getIdentifier("player" + i + "_sum", "id", getPackageName()));
@@ -196,14 +268,50 @@ public class MainActivity extends AppCompatActivity {
             textView.setText(PLAYER_ICONS[i] + textView.getText());
         }
         if (onStep == playerNumber) {
+            dealButton.setEnabled(true);
             diceButton.setEnabled(true);
             diceButton.setText(R.string.dice);
             addHouseButton.setEnabled(true);
             deleteHouseButton.setEnabled(true);
-        }else{
+        } else {
+            dealButton.setEnabled(false);
             diceButton.setEnabled(false);
             addHouseButton.setEnabled(false);
             deleteHouseButton.setEnabled(false);
+        }
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        alert.setTitle("Deal");
+        Trade trade = game.getTrade();
+        if (trade != null) {
+            alert.setMessage(trade.salesman + " -> " + trade.customer);
+            String text = ((TextView) findViewById(getResources().getIdentifier("cell_country" + trade.cell, "id", getPackageName()))).getText().toString();
+            final TextView textView1 = new TextView(MainActivity.this);
+            textView1.setText(text + "(" + trade.price + "$)");
+            alert.setView(textView1);
+            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Observable.create(Client.transferAnswerDealToServer(login, true))
+                            .subscribeOn(Schedulers.newThread())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(Client.getEmptySubscriber());
+                }
+            });
+
+            alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Observable.create(Client.transferAnswerDealToServer(login, false))
+                            .subscribeOn(Schedulers.newThread())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(Client.getEmptySubscriber());
+                }
+            });
+
+            AlertDialog dialog = alert.create();
+            dialog.show();
+            if(!login.equals(trade.salesman)){
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(false);
+            }
         }
     }
 }
