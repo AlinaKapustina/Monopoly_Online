@@ -417,8 +417,11 @@ public class Server {
             Cell cell = game.getCells().get(number);
             String salesman = cell.getName();
             if (number == 1) {
+                String name = cell.getName();
+                Player p = game.getPlayer().get(game.search(name));
                 cell.setName(login);
                 player.setSum(player.getSum() - game.getTrade().price);
+                p.setSum(p.getSum() + game.getTrade().price);
                 game.setTrade(null);
             } else {
                 game.setTrade(null);
