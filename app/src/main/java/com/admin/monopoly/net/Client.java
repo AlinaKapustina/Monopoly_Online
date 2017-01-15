@@ -28,7 +28,7 @@ import rx.Subscriber;
 public class Client {
 
     private static final int PORT = 20202;
-    private static final String ADDRESS = "192.168.0.70";
+    private static final String ADDRESS = "192.168.1.52";
     private static final String CHARSET = "UTF-8";
     private static final int TIMEOUT = 1;
     private static final int BUFFER_SIZE = 1024;
@@ -70,6 +70,14 @@ public class Client {
                 BusProvider.getInstance().post(false);
             }
         };
+    }
+
+    public static void takeSemaphore() {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Observable.OnSubscribe<Game> getModelByServer(final String login) {
@@ -126,22 +134,17 @@ public class Client {
             @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
-                try {
-                    semaphore.acquire();
-                    try (Socket socket = new Socket(ADDRESS, PORT)) {
-                        try (OutputStream out = socket.getOutputStream()) {
-                            JSONObject jsonObj = new JSONObject();
-                            jsonObj.put("Type", Constant.TYPE_GAME);
-                            jsonObj.put("Login", login);
-                            jsonObj.put("Cell", cellNumber);
-                            System.out.println(jsonObj.toString());
-                            out.write(jsonObj.toString().getBytes(CHARSET));
-                            subscriber.onCompleted();
-                        }
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
+                try (Socket socket = new Socket(ADDRESS, PORT)) {
+                    try (OutputStream out = socket.getOutputStream()) {
+                        JSONObject jsonObj = new JSONObject();
+                        jsonObj.put("Type", Constant.TYPE_GAME);
+                        jsonObj.put("Login", login);
+                        jsonObj.put("Cell", cellNumber);
+                        System.out.println(jsonObj.toString());
+                        out.write(jsonObj.toString().getBytes(CHARSET));
+                        subscriber.onCompleted();
                     }
-                } catch (InterruptedException e) {
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
                 semaphore.release();
@@ -155,24 +158,19 @@ public class Client {
             @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
-                try {
-                    semaphore.acquire();
-                    try (Socket socket = new Socket(ADDRESS, PORT)) {
-                        try (OutputStream out = socket.getOutputStream()) {
-                            JSONObject jsonObj = new JSONObject();
-                            jsonObj.put("Type", Constant.TYPE_ADD_HOUSE);
-                            jsonObj.put("Login", login);
-                            jsonObj.put("Cell", cellNumber);
-                            out.write(jsonObj.toString().getBytes(CHARSET));
-                            subscriber.onCompleted();
-                        }
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
+                try (Socket socket = new Socket(ADDRESS, PORT)) {
+                    try (OutputStream out = socket.getOutputStream()) {
+                        JSONObject jsonObj = new JSONObject();
+                        jsonObj.put("Type", Constant.TYPE_ADD_HOUSE);
+                        jsonObj.put("Login", login);
+                        jsonObj.put("Cell", cellNumber);
+                        out.write(jsonObj.toString().getBytes(CHARSET));
+                        subscriber.onCompleted();
                     }
-                    semaphore.release();
-                } catch (InterruptedException e) {
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
+                semaphore.release();
             }
         };
     }
@@ -183,21 +181,16 @@ public class Client {
             @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public void call(Subscriber<? super Boolean> subscriber) {
-                try {
-                    semaphore.acquire();
-                    try (Socket socket = new Socket(ADDRESS, PORT)) {
-                        try (OutputStream out = socket.getOutputStream()) {
-                            JSONObject jsonObj = new JSONObject();
-                            jsonObj.put("Type", Constant.TYPE_DELETE_HOUSE);
-                            jsonObj.put("Login", login);
-                            jsonObj.put("Cell", cellNumber);
-                            out.write(jsonObj.toString().getBytes(CHARSET));
-                            subscriber.onCompleted();
-                        }
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
+                try (Socket socket = new Socket(ADDRESS, PORT)) {
+                    try (OutputStream out = socket.getOutputStream()) {
+                        JSONObject jsonObj = new JSONObject();
+                        jsonObj.put("Type", Constant.TYPE_DELETE_HOUSE);
+                        jsonObj.put("Login", login);
+                        jsonObj.put("Cell", cellNumber);
+                        out.write(jsonObj.toString().getBytes(CHARSET));
+                        subscriber.onCompleted();
                     }
-                } catch (InterruptedException e) {
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
                 semaphore.release();
@@ -205,7 +198,7 @@ public class Client {
         };
     }
 
-    public static Observable.OnSubscribe<Boolean> transferDealToServer(final String login, final int cellNumber,final int cost) {
+    public static Observable.OnSubscribe<Boolean> transferDealToServer(final String login, final int cellNumber, final int cost) {
         return new Observable.OnSubscribe<Boolean>() {
 
             @TargetApi(Build.VERSION_CODES.KITKAT)
