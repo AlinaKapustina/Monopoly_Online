@@ -42,15 +42,6 @@ public class Server {
 
     Server() throws ClassNotFoundException, MessagingException {
 
-        //создана комната на двух игроков. Так как пока нет регистрации и создания лобби. 
-        //удалить эти строки, как появится создания лобби и регистрация игроков.
-        room_two.add("admin");
-        room_two.add("admin1");
-        Game game = new Game(room_two, START_SUM);
-        game.getPlayer().get(0).setPos(0);
-        game.getPlayer().get(1).setPos(0);
-        gamer.put("admin", game);
-        gamer.put("admin1", game);
         try (ServerSocket serverSocket = new ServerSocket(20202)) {
             while (true) {
                 try (Socket socket = serverSocket.accept(); InputStream inputStream = socket.getInputStream(); OutputStream outputStream = socket.getOutputStream()) {
