@@ -5,12 +5,21 @@ import com.google.gson.JsonObject;
 public class NetworkProtocol {
     private static NetworkProtocol ourInstance = new NetworkProtocol();
     public static int SERVER_PORT = 20202;
-    public static String SERVER_IP_V4 = "192.168.0.5";
+    public static String SERVER_IP_V4 = "192.168.1.52";
+    public static final String CHARSET = "UTF-8";
+    public static final int TIMEOUT = 1;
+    public static final int BUFFER_SIZE = 1024;
 
     public static final int TYPE_NEW_USER = 0;
     public static final int TYPE_AUTHORIZATION = 1;
     public static final int TYPE_LOBBY = 3;
     public static final int TYPE_START_GAME = 4;
+    public static final int TYPE_UPDATE_GAME = 5;
+    public static final int TYPE_GAME = 6;
+    public static final int TYPE_ADD_HOUSE = 7;
+    public static final int TYPE_DELETE_HOUSE = 8;
+    public static final int TYPE_TRADE = 9;
+    public static final int TYPE_ANSWER_TRADE = 10;
 
     public static final String PROPERTY_TYPE = "Type";
     public static final String PROPERTY_LOGIN = "Login";

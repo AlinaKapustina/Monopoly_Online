@@ -89,13 +89,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         finish();
     }
 
-    private void onStartGame(boolean isStartGame) {
+    private void onStartGame(boolean isStartGame, String login) {
         stopNetworkConnection();
         if (isStartGame) {
-            //This method for starts the game
-
-		    /*Intent game = new Intent(this, Game.class);
-            startActivity(game);*/
+		    Intent game = new Intent(this, GameActivity.class);
+            game.putExtra("Login",login);
+            startActivity(game);
             finish();
         }
     }
@@ -214,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void run() {
-                onStartGame(isStartGame);
+                onStartGame(isStartGame, login);
             }
         }
 

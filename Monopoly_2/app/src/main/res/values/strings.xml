@@ -26,4 +26,13 @@
     <string name="enter_number_of_players">Enter the number of players from 2 to 4</string>
     <string name="wrong_number_of_players">Wrong number of players</string>
     <string name="stop_searching_game">Stop searching game</string>
+    <string name="p">P</string>
+    <string name="t">T</string>
+    <string name="s">S</string>
+    <string name="с">С</string>
+    <string name="dice">Кубик</string>
+    <string name="add_house">Дом +</string>
+    <string name="delete_house">Дом -</string>
+    <string name="on">On</string>
+    <string name="deal">Сделка</string>
 </resources>
