@@ -44,13 +44,13 @@ public class Server {
 
         //создана комната на двух игроков. Так как пока нет регистрации и создания лобби. 
         //удалить эти строки, как появится создания лобби и регистрация игроков.
-//        room_two.add("admin");
-//        room_two.add("admin1");
-//        Game game = new Game(room_two, START_SUM);
-//        game.getPlayer().get(0).setPos(0);
-//        game.getPlayer().get(1).setPos(0);
-//        gamer.put("admin", game);
-//        gamer.put("admin1", game);
+        room_two.add("admin");
+        room_two.add("admin1");
+        Game game = new Game(room_two, START_SUM);
+        game.getPlayer().get(0).setPos(0);
+        game.getPlayer().get(1).setPos(0);
+        gamer.put("admin", game);
+        gamer.put("admin1", game);
         try (ServerSocket serverSocket = new ServerSocket(20202)) {
             while (true) {
                 try (Socket socket = serverSocket.accept(); InputStream inputStream = socket.getInputStream(); OutputStream outputStream = socket.getOutputStream()) {
@@ -306,6 +306,7 @@ public class Server {
                     player2.setSum(player2.getSum() + cost);
                     b = false;
                     player.setIsLife(false);
+                    game.setLifeNumber(game.getLifeNumber()-1);
                 }
             } else if (number % 7 == 0) {
                 int house = cell.getHouse();
@@ -395,7 +396,7 @@ public class Server {
             Player player = game.getPlayer().get(game.search(login));
             Cell cell = game.getCells().get(number);
             String salesman = cell.getName();
-            game.setTrade(new Trade(salesman, login, number, cost));
+            game.setTrade(new Trade(salesman, login, cost, number));
             JsonObject answerJson = new JsonObject();
             answerJson.addProperty("Type", TYPE_TRADE);
             answerJson.addProperty("Status", b);
@@ -411,17 +412,19 @@ public class Server {
         String s = null;
         try {
             String login = jsonObject.get("Login").getAsString();
-            int number = jsonObject.get("Answer").getAsInt();
+            boolean number = jsonObject.get("Answer").getAsBoolean();
             Game game = gamer.get(login);
             Player player = game.getPlayer().get(game.search(login));
-            Cell cell = game.getCells().get(number);
-            String salesman = cell.getName();
-            if (number == 1) {
-                String name = cell.getName();
+            Cell cell = game.getCells().get(game.getTrade().cell);
+
+            if (number) {
+                String name = game.getTrade().customer;
                 Player p = game.getPlayer().get(game.search(name));
-                cell.setName(login);
-                player.setSum(player.getSum() - game.getTrade().price);
-                p.setSum(p.getSum() + game.getTrade().price);
+                cell.setName(name);
+                if (p.getSum() - game.getTrade().price > 0) {
+                    player.setSum(player.getSum() + game.getTrade().price);
+                    p.setSum(p.getSum() - game.getTrade().price);
+                }
                 game.setTrade(null);
             } else {
                 game.setTrade(null);

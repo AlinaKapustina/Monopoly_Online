@@ -12,6 +12,7 @@ public class Game {
     private List<Cell> cells = new ArrayList<>();
     private String onStep;
     private Trade trade = null;
+    private int lifeNumber;
 
     public Trade getTrade() {
         return trade;
@@ -27,6 +28,15 @@ public class Game {
         }
         onStep = player.get(0).getName();
         addCell();
+        lifeNumber = player.size();
+    }
+
+    public int getLifeNumber() {
+        return lifeNumber;
+    }
+
+    public void setLifeNumber(int lifeNumber) {
+        this.lifeNumber = lifeNumber;
     }
 
     final void addCell() {
